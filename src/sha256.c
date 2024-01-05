@@ -60,7 +60,7 @@ static inline uint32_t Ch(uint32_t x, uint32_t y, uint32_t z) {
 }
 
 static inline uint32_t Maj(uint32_t x, uint32_t y, uint32_t z) {
-	(x & y) ^ (x & z) ^ (y & z);
+	return (x & y) ^ (x & z) ^ (y & z);
 }
 
 static inline uint32_t ROTR(uint32_t x, uint32_t n) {
