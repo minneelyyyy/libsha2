@@ -1,0 +1,4 @@
+*.o
+libsha2.so
+libsha2.a
+tests/basic
