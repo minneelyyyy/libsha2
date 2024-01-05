@@ -2,13 +2,13 @@
 OBJS=src/sha256.o
 TESTS=tests/basic
 
+CFLAGS += -Iinclude
+
 .PHONY: all tests clean
 .SUFFIXES: .c .o
 
 all: libsha2.so libsha2.a
 tests: $(TESTS)
-
-CFLAGS += -Iinclude
 
 .c.o:
 	$(CC) $(CFLAGS) -c -o $@ $<

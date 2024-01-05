@@ -12,7 +12,7 @@ int main(void) {
     printf("\"%s\" => ", data);
 
     for (size_t i = 0; i < 256 / 8; i++) {
-        printf("%hhx", ((char*)digest)[i]);
+        printf("%02hhx", ((char*)digest)[i]);
     }
 
     printf("\n");

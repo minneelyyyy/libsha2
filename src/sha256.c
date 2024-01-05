@@ -13,8 +13,8 @@
         ((unsigned char*)__b)[0] = (((uint32_t)__v) >> 24) & 0xff; \
     } while(0)
 
-#define READ_32_BE(__b) (((uint32_t)((unsigned char*)__b)[3]) |       \
-                         ((uint32_t)((unsigned char*)__b)[2] << 8) |  \
+#define READ_32_BE(__b) (((uint32_t)((unsigned char*)__b)[3] <<  0) | \
+                         ((uint32_t)((unsigned char*)__b)[2] <<  8) | \
                          ((uint32_t)((unsigned char*)__b)[1] << 16) | \
                          ((uint32_t)((unsigned char*)__b)[0] << 24))
 
@@ -30,8 +30,8 @@
         ((unsigned char*)__b)[0] = (((uint64_t)__v) >> 56) & 0xff; \
     } while(0)
 
-#define READ_64_BE(__b) (((uint64_t)((unsigned char*)__b)[7]) |         \
-                         (((uint64_t)((unsigned char*)__b)[6]) << 8) |  \
+#define READ_64_BE(__b) ((((uint64_t)((unsigned char*)__b)[7]) <<  0) | \
+                         (((uint64_t)((unsigned char*)__b)[6]) <<  8) | \
                          (((uint64_t)((unsigned char*)__b)[5]) << 16) | \
                          (((uint64_t)((unsigned char*)__b)[4]) << 24) | \
                          (((uint64_t)((unsigned char*)__b)[3]) << 32) | \
@@ -90,6 +90,7 @@ static inline uint32_t lsigma1(uint32_t x) {
 /* The rest of the SHA-256 algorithm (6.2.2 Hash Computation) */
 static void _sha256(const MessageBlock *M, size_t N, SHA256Digest H) {
     uint32_t W[64];
+    uint32_t a, b, c, d, e, f, g, h, T1, T2;
 
     for (size_t i = 1; i <= N; i++) {
         for (size_t t = 0; t < 16; t++) {
@@ -97,21 +98,21 @@ static void _sha256(const MessageBlock *M, size_t N, SHA256Digest H) {
         }
 
         for (size_t t = 16; t < 64; t++) {
-            W[t] = lsigma1(W[t-2]) + W[t-7] + lsigma0(W[t-15]) + W[t-16];
+            W[t] = lsigma1(W[t - 2]) + W[t - 7] + lsigma0(W[t - 15]) + W[t - 16];
         }
 
-        uint32_t a = H[0];
-        uint32_t b = H[1];
-        uint32_t c = H[2];
-        uint32_t d = H[3];
-        uint32_t e = H[4];
-        uint32_t f = H[5];
-        uint32_t g = H[6];
-        uint32_t h = H[7];
+        a = H[0];
+        b = H[1];
+        c = H[2];
+        d = H[3];
+        e = H[4];
+        f = H[5];
+        g = H[6];
+        h = H[7];
 
         for (size_t t = 0; t < 64; t++) {
-            uint32_t T1 = h + sigma1(e) + Ch(e, f, g) + K[t] + W[t];
-            uint32_t T2 = sigma0(a) + Maj(a, b, c);
+            T1 = h + sigma1(e) + Ch(e, f, g) + K[t] + W[t];
+            T2 = sigma0(a) + Maj(a, b, c);
             h = g;
             g = f;
             f = e;
