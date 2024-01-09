@@ -144,7 +144,7 @@ static inline void init_digest(SHA256Digest H) {
 }
 
 static size_t get_block_cnt(uint64_t l) {
-    size_t padding_bits = 448 - (l + 1);
+    size_t padding_bits = (448 - (l + 1)) % sizeof_bits(SHA256MessageBlock);
     size_t total_bits = l + 1 + padding_bits + sizeof_bits(l);
 
     return total_bits / sizeof_bits(SHA256MessageBlock);
@@ -164,7 +164,8 @@ static SHA256MessageBlock *padded_message(const void *M, size_t nbytes, size_t *
 
     pad_message(blocks, block_cnt, l);
 
-    *N = block_cnt;
+    if (N != NULL)
+        *N = block_cnt;
 
     return blocks;
 }
@@ -187,37 +188,14 @@ void sha256(const void *M, size_t nbytes, SHA256Digest H) {
     }
 }
 
-void sha256_stream(const void *data, size_t nbytes, struct SHA2StreamState* st, SHA256Digest H) {
-}
+#define SHA_ALGORITHM SHA256
+#define MESSAGE_BLOCK_T SHA256MessageBlock
+#define DIGEST_T SHA256Digest
+#define l_T uint64_t
+#define SHA_F _sha256
+#define STREAM_F sha256_stream
+#define STREAM_INIT_F sha256_stream_init
+#define STREAM_INIT_NO_DEFAULTS_F sha256_stream_init_no_defaults
+#define STREAM_FINISH_F sha256_stream_finish
 
-void sha256_stream_init(struct SHA2StreamState *st, SHA256Digest H) {
-    if (st != NULL) {
-        st->_message_block_count = 0;
-        st->_data_size = 0;
-        st->_message_blocks = NULL;
-        st->behavior = SHA2_AUTOMATIC;
-        st->max_buf_size = 16;
-    }
-
-    init_digest(H);
-}
-
-void sha256_stream_init_no_defaults(struct SHA2StreamState *st, SHA256Digest H) {
-    if (st != NULL) {
-        st->_message_block_count = 0;
-        st->_data_size = 0;
-        st->_message_blocks = NULL;
-    }
-
-    init_digest(H);
-}
-
-void sha256_stream_finish(struct SHA2StreamState *st, SHA256Digest H) {
-    uint64_t l = st->_data_size * 8;
-    size_t block_cnt = get_block_cnt(l);
-
-    pad_message(st->_message_blocks, block_cnt, l);
-    _sha256(st->_message_blocks, block_cnt, H);
-
-    free(st->_message_blocks);
-}
+#include "streaming.c"
