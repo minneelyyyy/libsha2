@@ -42,8 +42,6 @@
 #define elems(__vec) (sizeof(__vec) / sizeof(__vec[0]))
 #define sizeof_bits(__expr) (sizeof(__expr) * 8)
 
-typedef uint32_t MessageBlock[16];
-
 static const uint32_t K[] = {
     0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
     0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
@@ -88,7 +86,7 @@ static inline uint32_t lsigma1(uint32_t x) {
 }
 
 /* The rest of the SHA-256 algorithm (6.2.2 Hash Computation) */
-static void _sha256(const MessageBlock *M, size_t N, SHA256Digest H) {
+static void _sha256(const SHA256MessageBlock *M, size_t N, SHA256Digest H) {
     uint32_t W[64];
     uint32_t a, b, c, d, e, f, g, h, T1, T2;
 
@@ -134,27 +132,7 @@ static void _sha256(const MessageBlock *M, size_t N, SHA256Digest H) {
     }
 }
 
-/* Performs the steps defined in FIPS 180-2 section 6.2.1 SHA-256 Preprocessing, then calls _sha256. */
-void sha256(const void *M, size_t nbytes, SHA256Digest H) {
-    uint64_t l = nbytes * 8;
-    size_t padding_bits = 448 - (l + 1);
-    size_t total_bits = l + 1 + padding_bits + sizeof_bits(l);
-    size_t N = total_bits / sizeof_bits(MessageBlock);
-
-    assert(total_bits % 512 == 0);
-
-    MessageBlock* blocks = calloc(N, sizeof(MessageBlock));
-
-    /* the padded M is defined to be M + literal 1 bit + padding_bits 0s + l as u64be */
-    memcpy(blocks, M, nbytes);
-
-    /* literal 1 right after the initial M */
-    ((char*)blocks)[nbytes] |= 0x80;
-
-    /* the spec specifies that l gets written as a little endian number.
-     * this math is ugly. All it does is get the last u64 of the block. */
-    WRITE_64_BE(l, &((uint64_t*)blocks)[N * sizeof(MessageBlock) / sizeof(uint64_t) - 1]);
-
+static inline void init_digest(SHA256Digest H) {
     H[0] = 0x6a09e667;
     H[1] = 0xbb67ae85;
     H[2] = 0x3c6ef372;
@@ -163,6 +141,40 @@ void sha256(const void *M, size_t nbytes, SHA256Digest H) {
     H[5] = 0x9b05688c;
     H[6] = 0x1f83d9ab;
     H[7] = 0x5be0cd19;
+}
+
+static size_t get_block_cnt(uint64_t l) {
+    size_t padding_bits = 448 - (l + 1);
+    size_t total_bits = l + 1 + padding_bits + sizeof_bits(l);
+
+    return total_bits / sizeof_bits(SHA256MessageBlock);
+}
+
+static void pad_message(SHA256MessageBlock* blocks, size_t block_cnt, uint64_t l) {
+    ((char*)blocks)[l / 8] |= 0x80;
+    WRITE_64_BE(l, &((uint64_t*)blocks)[block_cnt * sizeof(SHA256MessageBlock) / sizeof(uint64_t) - 1]);
+}
+
+static SHA256MessageBlock *padded_message(const void *M, size_t nbytes, size_t *N) {
+    uint64_t l = nbytes * 8;
+    size_t block_cnt = get_block_cnt(l);
+
+    SHA256MessageBlock *blocks = calloc(block_cnt, sizeof(SHA256MessageBlock));
+    memcpy(blocks, M, nbytes);
+
+    pad_message(blocks, block_cnt, l);
+
+    *N = block_cnt;
+
+    return blocks;
+}
+
+/* Performs the steps defined in FIPS 180-2 section 6.2.1 SHA-256 Preprocessing, then calls _sha256. */
+void sha256(const void *M, size_t nbytes, SHA256Digest H) {
+    size_t N;
+
+    SHA256MessageBlock *blocks = padded_message(M, nbytes, &N);
+    init_digest(H);
 
     _sha256(blocks, N, H);
 
@@ -173,4 +185,39 @@ void sha256(const void *M, size_t nbytes, SHA256Digest H) {
     for (size_t i = 0; i < 8; i++) {
         H[i] = READ_32_BE(&H[i]);
     }
+}
+
+void sha256_stream(const void *data, size_t nbytes, struct SHA2StreamState* st, SHA256Digest H) {
+}
+
+void sha256_stream_init(struct SHA2StreamState *st, SHA256Digest H) {
+    if (st != NULL) {
+        st->_message_block_count = 0;
+        st->_data_size = 0;
+        st->_message_blocks = NULL;
+        st->behavior = SHA2_AUTOMATIC;
+        st->max_buf_size = 16;
+    }
+
+    init_digest(H);
+}
+
+void sha256_stream_init_no_defaults(struct SHA2StreamState *st, SHA256Digest H) {
+    if (st != NULL) {
+        st->_message_block_count = 0;
+        st->_data_size = 0;
+        st->_message_blocks = NULL;
+    }
+
+    init_digest(H);
+}
+
+void sha256_stream_finish(struct SHA2StreamState *st, SHA256Digest H) {
+    uint64_t l = st->_data_size * 8;
+    size_t block_cnt = get_block_cnt(l);
+
+    pad_message(st->_message_blocks, block_cnt, l);
+    _sha256(st->_message_blocks, block_cnt, H);
+
+    free(st->_message_blocks);
 }
