@@ -18,10 +18,7 @@ int main(int argc, char **argv) {
 
     f = fopen(argv[1], "rb");
 
-    st.max_buf_cap = 1;
-    st.behavior = SHA2_AUTOMATIC;
-
-    sha256_stream_init_no_defaults(&st, digest);
+    sha256_stream_init(&st, digest);
 
     while (bytes_read = fread(buffer, sizeof(char), sizeof(buffer) / sizeof(char), f)) {
         sha256_stream(buffer, bytes_read, &st, digest);

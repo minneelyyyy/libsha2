@@ -9,10 +9,7 @@ int main() {
     SHA256Digest digest;
     char buffer[512];
 
-    st.max_buf_cap = 1;
-    st.behavior = SHA2_AUTOMATIC;
-
-    sha256_stream_init_no_defaults(&st, digest);
+    sha256_stream_init(&st, digest);
 
     sha256_stream("The quick brown fox", strlen("The quick brown fox"), &st, digest);
     sha256_stream(" jumps ", strlen(" jumps "), &st, digest);

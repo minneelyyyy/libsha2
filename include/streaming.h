@@ -1,21 +1,9 @@
 #ifndef __SHA2_STREAMING_H
 #define __SHA2_STREAMING_H
 
-enum SHA2StreamBehavior {
-    /* Uses the time since last call to know if it should increase buffer size of just compute the hash now. */
-    SHA2_AUTOMATIC = 0,
-
-    /* Will favor resizing the buffer over actually computing the hash until it absolutely has to. */
-    SHA2_AGGRESSIVE_MEMORY_USAGE = 1,
-
-    /* Will favor just computing the hash over resizing the buffer. */
-    SHA2_CONSERVATIVE_MEMORY_USAGE = 2,
-};
-
 struct SHA2StreamState {
     /* Public fields. These are initialized by sha2*_stream_init. They are untouched by sha2*_stream_init_no_defaults. */
-    size_t max_buf_cap; /* Maximum buffer size in SHA256MessageBlocks. */
-    enum SHA2StreamBehavior behavior; /* How SHA2 should buffer data. */
+    size_t max_buf_cap; /* Maximum buffer size in SHA256MessageBlocks. 0 means no cap. */
 
     /* Private fields */
     size_t _data_size;
@@ -24,6 +12,7 @@ struct SHA2StreamState {
     void *_message_blocks;
 
     clock_t _last, _lastlast;
+    size_t _last_size;
 };
 
 /** Initializes a SHA2StreamState and SHA256Digest for use in streaming data.
