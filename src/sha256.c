@@ -188,6 +188,19 @@ void sha256(const void *M, size_t nbytes, SHA256Digest H) {
     }
 }
 
+char *sha256tos(char out[64], SHA256Digest digest) {
+    char buffer[3] = "";
+
+    *out = '\0';
+
+    for (size_t i = 0; i < 256 / 8; i++) {
+	    snprintf(buffer, 3, "%02hhx", ((char*)digest)[i]);
+	    strcat(out, buffer);
+    }
+
+    return out;
+}
+
 #define SHA_ALGORITHM SHA256
 #define MESSAGE_BLOCK_T SHA256MessageBlock
 #define DIGEST_T SHA256Digest

@@ -16,4 +16,11 @@ typedef uint32_t SHA256MessageBlock[16];
  */
 void sha256(const void *M, size_t nbytes, SHA256Digest H);
 
+/** Writes a SHA256 digest into a buffer as ascii letters.
+ * @param out Buffer to write to.
+ * @param digest Digest to write.
+ * @return The buffer passed to it.
+*/
+char *sha256tos(char out[64], SHA256Digest digest);
+
 #endif /* __SHA256_H */
