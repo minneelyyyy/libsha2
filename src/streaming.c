@@ -13,18 +13,31 @@
 #define msgblk_size_bytes(__x) (__x * sizeof(MESSAGE_BLOCK_T))
 
 static void handle_cant_resize(const void *data, size_t nbytes, struct SHA2StreamState *st, DIGEST_T H) {
-    for (;;) {
-        /* attempt to copy as much from data as possible. as much of nbytes as possible without
-         * going over whats left in the buffer. */
+    while (nbytes != 0) {
+        /* attempt to copy as much of nbytes as possible without going overflowing the buffer. */
         size_t amount = MIN(nbytes, msgblk_size_bytes(st->_message_block_cap) - st->_data_size);
         memcpy(((char*)st->_message_blocks) + st->_data_size, data, amount);
 
+        /* Move forward in the buffer by amount */
         data = ((char*)data) + amount;
         nbytes -= amount;
 
+        /* we added this much data to the buffer */
+        st->_data_size += amount;
+
+        /* If we didn't fill the buffer, then we can leave. */
+        if (st->_data_size < msgblk_size_bytes(st->_message_block_cap))
+            break;
+
+        /* if we did, then we process the whole buffer. */
         SHA_F(st->_message_blocks, st->_message_block_cap, H);
+
+        /* zero out buffer since padding is meant to be 0 bytes */
         memset(st->_message_blocks, 0, msgblk_size_bytes(st->_message_block_cap));
         st->_data_size = 0;
+
+        /* tracks bytes written to the hash so far */
+        st->_bytes_written += msgblk_size_bytes(st->_message_block_cap);
     }
 }
 
@@ -82,6 +95,7 @@ void STREAM_INIT_F(struct SHA2StreamState *st, DIGEST_T H) {
     if (st != NULL) {
         st->_message_block_cap = 0;
         st->_data_size = 0;
+        st->_bytes_written = 0;
         st->_message_blocks = NULL;
         st->_last = 0;
         st->behavior = SHA2_AUTOMATIC;
@@ -102,6 +116,7 @@ void STREAM_INIT_NO_DEFAULTS_F(struct SHA2StreamState *st, DIGEST_T H) {
             0;
 #endif
         st->_data_size = 0;
+        st->_bytes_written = 0;
         st->_message_blocks =
 #ifdef SHA2_PREALLOCATE_MESSAGE_BLOCKS
             calloc(st->max_buf_cap, sizeof(MESSAGE_BLOCK_T));
@@ -114,13 +129,16 @@ void STREAM_INIT_NO_DEFAULTS_F(struct SHA2StreamState *st, DIGEST_T H) {
 }
 
 void STREAM_FINISH_F(struct SHA2StreamState *st, DIGEST_T H) {
-    l_T l = st->_data_size * 8;
-    size_t block_cnt = get_block_cnt(l);
-    size_t block_used_count = st->_data_size / sizeof(MESSAGE_BLOCK_T) + (st->_data_size % sizeof(MESSAGE_BLOCK_T) != 0);
+    size_t N;
 
-    pad_message(st->_message_blocks, block_used_count, l);
-    SHA_F(st->_message_blocks, block_used_count, H);
+    MESSAGE_BLOCK_T* blocks = padded_message(st->_message_blocks,
+        st->_data_size,
+        (st->_bytes_written + st->_data_size) * 8,
+        &N);
 
+    SHA_F(blocks, N, H);
+
+    free(blocks);
     free(st->_message_blocks);
 
     /* this entire time we have probably been working with little endian numbers on most cpus.

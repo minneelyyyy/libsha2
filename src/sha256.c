@@ -150,19 +150,19 @@ static size_t get_block_cnt(uint64_t l) {
     return total_bits / sizeof_bits(SHA256MessageBlock);
 }
 
-static void pad_message(SHA256MessageBlock* blocks, size_t block_cnt, uint64_t l) {
+static void pad_message(SHA256MessageBlock* blocks, size_t block_cnt, uint64_t l_to_write, uint64_t l) {
     ((char*)blocks)[l / 8] |= 0x80;
-    WRITE_64_BE(l, &((uint64_t*)blocks)[block_cnt * sizeof(SHA256MessageBlock) / sizeof(uint64_t) - 1]);
+    WRITE_64_BE(l_to_write, &((uint64_t*)blocks)[block_cnt * sizeof(SHA256MessageBlock) / sizeof(uint64_t) - 1]);
 }
 
-static SHA256MessageBlock *padded_message(const void *M, size_t nbytes, size_t *N) {
+static SHA256MessageBlock *padded_message(const void *M, size_t nbytes, uint64_t l_to_write, size_t *N) {
     uint64_t l = nbytes * 8;
     size_t block_cnt = get_block_cnt(l);
 
     SHA256MessageBlock *blocks = calloc(block_cnt, sizeof(SHA256MessageBlock));
     memcpy(blocks, M, nbytes);
 
-    pad_message(blocks, block_cnt, l);
+    pad_message(blocks, block_cnt, l_to_write, l);
 
     if (N != NULL)
         *N = block_cnt;
@@ -174,7 +174,7 @@ static SHA256MessageBlock *padded_message(const void *M, size_t nbytes, size_t *
 void sha256(const void *M, size_t nbytes, SHA256Digest H) {
     size_t N;
 
-    SHA256MessageBlock *blocks = padded_message(M, nbytes, &N);
+    SHA256MessageBlock *blocks = padded_message(M, nbytes, nbytes * 8, &N);
     init_digest(H);
 
     _sha256(blocks, N, H);

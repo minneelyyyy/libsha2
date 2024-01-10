@@ -1,6 +1,6 @@
 
 OBJS=src/sha256.o
-TESTS=tests/basic tests/stream
+TESTS=tests/basic tests/stream tests/sha256sum
 
 CFLAGS += -Iinclude
 
@@ -25,5 +25,8 @@ tests/basic: libsha2.a tests/basic.o
 tests/stream: libsha2.a tests/stream.o
 	$(CC) $(LDFLAGS) -o $@ tests/stream.o libsha2.a
 
+tests/sha256sum: libsha2.a tests/sha256sum.o
+	$(CC) $(LDFLAGS) -o $@ tests/sha256sum.o libsha2.a
+
 clean:
-	rm -f $(OBJS) tests/basic tests/stream tests/*.o libsha2.so libsha2.a
+	rm -f $(OBJS) $(TESTS) tests/*.o libsha2.so libsha2.a

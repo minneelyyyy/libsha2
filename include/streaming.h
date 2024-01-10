@@ -20,6 +20,7 @@ struct SHA2StreamState {
     /* Private fields */
     size_t _data_size;
     size_t _message_block_cap;
+    size_t _bytes_written;
     void *_message_blocks;
 
     clock_t _last, _lastlast;

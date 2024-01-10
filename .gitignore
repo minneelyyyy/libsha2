@@ -2,3 +2,5 @@
 libsha2.so
 libsha2.a
 tests/basic
+tests/stream
+tests/sha256sum
