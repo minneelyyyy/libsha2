@@ -1,6 +1,6 @@
 PREFIX?=/usr/local
 
-OBJS=src/sha256/sha256.o src/sha256/x86/avx2.o
+OBJS=src/sha256/sha256.o src/sha256/x86/avx2.o src/sha256/generic.o
 TESTS=tests/basic tests/stream tests/sha256sum tests/miner
 
 CFLAGS += -Iinclude -mavx -mavx2 -msse -msse2 -msse3 -msse4.1 -msse4.2

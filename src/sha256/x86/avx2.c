@@ -18,82 +18,6 @@ static const uint32_t K[] = {
     0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2,
 };
 
-static inline uint32_t Ch(uint32_t x, uint32_t y, uint32_t z) {
-    return (x & y) ^ (~x & z);
-}
-
-static inline uint32_t Maj(uint32_t x, uint32_t y, uint32_t z) {
-    return (x & y) ^ (x & z) ^ (y & z);
-}
-
-static inline uint32_t ROTR(uint32_t x, uint32_t n) {
-    return (x >> n) | x << (sizeof_bits(uint32_t) - n);
-}
-
-static inline uint32_t SHR(uint32_t x, uint32_t n) {
-    return x >> n;
-}
-
-static inline uint32_t sigma0(uint32_t x) {
-    return ROTR(x, 2) ^ ROTR(x, 13) ^ ROTR(x, 22);
-}
-
-static inline uint32_t sigma1(uint32_t x) {
-    return ROTR(x, 6) ^ ROTR(x, 11) ^ ROTR(x, 25);
-}
-
-static inline uint32_t lsigma0(uint32_t x) {
-    return ROTR(x, 7) ^ ROTR(x, 18) ^ SHR(x, 3);
-}
-
-static inline uint32_t lsigma1(uint32_t x) {
-    return ROTR(x, 17) ^ ROTR(x, 19) ^ SHR(x, 10);
-}
-
-void _sha256_hash_block(const SHA256MessageBlock M, SHA256Digest H) {
-    uint32_t W[64];
-    uint32_t a, b, c, d, e, f, g, h, T1, T2;
-
-    for (size_t t = 0; t < 16; t++) {
-        W[t] = READ_32_BE(&M[t]);
-    }
-
-    for (size_t t = 16; t < 64; t++) {
-        W[t] = lsigma1(W[t - 2]) + W[t - 7] + lsigma0(W[t - 15]) + W[t - 16];
-    }
-
-    a = H[0];
-    b = H[1];
-    c = H[2];
-    d = H[3];
-    e = H[4];
-    f = H[5];
-    g = H[6];
-    h = H[7];
-
-    for (size_t t = 0; t < 64; t++) {
-        T1 = h + sigma1(e) + Ch(e, f, g) + K[t] + W[t];
-        T2 = sigma0(a) + Maj(a, b, c);
-        h = g;
-        g = f;
-        f = e;
-        e = d + T1;
-        d = c;
-        c = b;
-        b = a;
-        a = T1 + T2;
-    }
-
-    H[0] = a + H[0];
-    H[1] = b + H[1];
-    H[2] = c + H[2];
-    H[3] = d + H[3];
-    H[4] = e + H[4];
-    H[5] = f + H[5];
-    H[6] = g + H[6];
-    H[7] = h + H[7];
-}
-
 static inline __m256i Ch256(__m256i x, __m256i y, __m256i z) {
     // x & y
     __m256i and_result1 = _mm256_and_si256(x, y);
@@ -189,7 +113,6 @@ static inline __m256i lsigma1256(__m256i x) {
     return result;
 }
 
-#if 1
 /* hash 8 blocks and 8 digests concurrently using 256 bit simd registers */
 void _sha256_hash_block_x8(const SHA256MessageBlock M[8], SHA256Digest H[8]) {
     __m256i W[64];
@@ -306,17 +229,4 @@ void _sha256_hash_block_x8(const SHA256MessageBlock M[8], SHA256Digest H[8]) {
     H[5][7] += _mm256_extract_epi32(h, 5);
     H[6][7] += _mm256_extract_epi32(h, 6);
     H[7][7] += _mm256_extract_epi32(h, 7);
-}
-#else
-void _sha256_hash_block_x8(const SHA256MessageBlock M[8], SHA256Digest H[8]) {
-    for (size_t i = 0; i < 8; i++) {
-        _sha256_hash_block(M[i], H[i]);
-    }
-}
-#endif
-
-void _sha256(const SHA256MessageBlock *M, size_t N, SHA256Digest H) {
-    for (size_t i = 0; i < N; i++) {
-        _sha256_hash_block(M[i], H);
-    }
 }
