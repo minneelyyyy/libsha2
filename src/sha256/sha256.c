@@ -6,6 +6,7 @@
 #include <sha2/sha256.h>
 #include <sha2/bits/endian.h>
 
+/* Implements the actual sha256 algorithm. A basic implementation can be found in src/sha256/generic.c */
 extern void _sha256(const SHA256MessageBlock *M, size_t N, SHA256Digest H);
 
 #define elems(__vec) (sizeof(__vec) / sizeof(__vec[0]))
@@ -67,14 +68,20 @@ void sha256(const void *M, size_t nbytes, SHA256Digest H) {
     }
 }
 
+static char tohex[] = {
+    '0', '1', '2', '3', '4',
+    '5', '6', '7', '8', '9',
+    'a', 'b', 'c', 'd', 'e', 'f',
+};
+
 char *sha256tos(char out[64], SHA256Digest digest) {
-    char buffer[3] = "";
+    uint16_t *wout = out;
 
-    *out = '\0';
-
-    for (size_t i = 0; i < 256 / 8; i++) {
-	    snprintf(buffer, 3, "%02hhx", ((char*)digest)[i]);
-	    strcat(out, buffer);
+    for (size_t i = 0; i < sizeof(SHA256Digest); i++) {
+        unsigned char c = ((char*)digest)[i];
+        unsigned char a = c & 0x0F;
+        unsigned char b = (c & 0xF0) >> 4;
+        wout[i] = tohex[b] | tohex[a] << 8;
     }
 
     return out;
