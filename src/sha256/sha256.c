@@ -75,7 +75,7 @@ static char tohex[] = {
 };
 
 char *sha256tos(char out[64], SHA256Digest digest) {
-    uint16_t *wout = out;
+    uint16_t *wout = (uint16_t*)out;
 
     for (size_t i = 0; i < sizeof(SHA256Digest); i++) {
         unsigned char c = ((char*)digest)[i];
