@@ -20,7 +20,7 @@ int main() {
 
     sha256tos(buffer, digest);
 
-    printf("%s\n", buffer);
+    printf("%64.64s\n", buffer);
 
     return 0;
 }

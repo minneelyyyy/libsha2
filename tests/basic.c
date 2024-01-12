@@ -69,7 +69,7 @@ int main(void) {
         char digest_str[64];
 
         sha256(tests[i].text, strlen(tests[i].text), digest);
-        printf("\"%s\" => %64s\n", tests[i].text, sha256tos(digest_str, digest));
+        printf("\"%s\" => %64.64s\n", tests[i].text, sha256tos(digest_str, digest));
 
         assert(!strcmp(tests[i].hash, digest_str));
     }
