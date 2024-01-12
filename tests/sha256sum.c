@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
 
     sha256tos(buffer, digest);
 
-    printf("%s  %s\n", buffer, argv[1]);
+    printf("%64.64s  %s\n", buffer, argv[1]);
 
     fclose(f);
 
