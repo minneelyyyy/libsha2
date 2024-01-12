@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdbool.h>
 
-#define DIFFICULTY 3
+#define DIFFICULTY 4
 #define CHALLENGE "hello!"
 
 bool check_difficulty(SHA256Digest hash, size_t difficulty) {
@@ -30,6 +30,7 @@ int main(void) {
     size_t u = 0;
 
     printf("Difficulty: %u\n", DIFFICULTY);
+    printf("Challenge: \"%s\"\n", CHALLENGE);
 
     for (;;) {
         SHA256MessageBlock blocks[8] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, };

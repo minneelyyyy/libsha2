@@ -189,7 +189,7 @@ static inline __m256i lsigma1256(__m256i x) {
     return result;
 }
 
-#if 0
+#if 1
 /* hash 8 blocks and 8 digests concurrently using 256 bit simd registers */
 void _sha256_hash_block_x8(const SHA256MessageBlock M[8], SHA256Digest H[8]) {
     __m256i W[64];
@@ -198,14 +198,14 @@ void _sha256_hash_block_x8(const SHA256MessageBlock M[8], SHA256Digest H[8]) {
 
     for (size_t t = 0; t < 16; t++) {
         W[t] = _mm256_set_epi32(
-            READ_32_BE(&M[0][t]),
-            READ_32_BE(&M[1][t]),
-            READ_32_BE(&M[2][t]),
-            READ_32_BE(&M[3][t]),
-            READ_32_BE(&M[4][t]),
-            READ_32_BE(&M[5][t]),
+            READ_32_BE(&M[7][t]),
             READ_32_BE(&M[6][t]),
-            READ_32_BE(&M[7][t])
+            READ_32_BE(&M[5][t]),
+            READ_32_BE(&M[4][t]),
+            READ_32_BE(&M[3][t]),
+            READ_32_BE(&M[2][t]),
+            READ_32_BE(&M[1][t]),
+            READ_32_BE(&M[0][t])
         );
     }
 
@@ -213,14 +213,14 @@ void _sha256_hash_block_x8(const SHA256MessageBlock M[8], SHA256Digest H[8]) {
         W[t] = _mm256_add_epi32(lsigma1256(W[t - 2]), _mm256_add_epi32(W[t - 7], _mm256_add_epi32(lsigma0256(W[t - 15]), W[t - 16])));
     }
 
-    a = _mm256_set_epi32(H[0][0], H[1][0], H[2][0], H[3][0], H[4][0], H[5][0], H[6][0], H[7][0]);
-    b = _mm256_set_epi32(H[0][1], H[1][1], H[2][1], H[3][1], H[4][1], H[5][1], H[6][1], H[7][1]);
-    c = _mm256_set_epi32(H[0][2], H[1][2], H[2][2], H[3][2], H[4][2], H[5][2], H[6][2], H[7][2]);
-    d = _mm256_set_epi32(H[0][3], H[1][3], H[2][3], H[3][3], H[4][3], H[5][3], H[6][3], H[7][3]);
-    e = _mm256_set_epi32(H[0][4], H[1][4], H[2][4], H[3][4], H[4][4], H[5][4], H[6][4], H[7][4]);
-    f = _mm256_set_epi32(H[0][5], H[1][5], H[2][5], H[3][5], H[4][5], H[5][5], H[6][5], H[7][5]);
-    g = _mm256_set_epi32(H[0][6], H[1][6], H[2][6], H[3][6], H[4][6], H[5][6], H[6][6], H[7][6]);
-    h = _mm256_set_epi32(H[0][7], H[1][7], H[2][7], H[3][7], H[4][7], H[5][7], H[6][7], H[7][7]);
+    a = _mm256_set_epi32(H[7][0], H[6][0], H[5][0], H[4][0], H[3][0], H[2][0], H[1][0], H[0][0]);
+    b = _mm256_set_epi32(H[7][1], H[6][1], H[5][1], H[4][1], H[3][1], H[2][1], H[1][1], H[0][1]);
+    c = _mm256_set_epi32(H[7][2], H[6][2], H[5][2], H[4][2], H[3][2], H[2][2], H[1][2], H[0][2]);
+    d = _mm256_set_epi32(H[7][3], H[6][3], H[5][3], H[4][3], H[3][3], H[2][3], H[1][3], H[0][3]);
+    e = _mm256_set_epi32(H[7][4], H[6][4], H[5][4], H[4][4], H[3][4], H[2][4], H[1][4], H[0][4]);
+    f = _mm256_set_epi32(H[7][5], H[6][5], H[5][5], H[4][5], H[3][5], H[2][5], H[1][5], H[0][5]);
+    g = _mm256_set_epi32(H[7][6], H[6][6], H[5][6], H[4][6], H[3][6], H[2][6], H[1][6], H[0][6]);
+    h = _mm256_set_epi32(H[7][7], H[6][7], H[5][7], H[4][7], H[3][7], H[2][7], H[1][7], H[0][7]);
 
     for (size_t t = 0; t < 64; t++) {
         T1 = _mm256_add_epi32(h, _mm256_add_epi32(sigma1256(e), _mm256_add_epi32(Ch256(e, f, g), _mm256_add_epi32(_mm256_set1_epi32(K[t]), W[t]))));
@@ -235,77 +235,77 @@ void _sha256_hash_block_x8(const SHA256MessageBlock M[8], SHA256Digest H[8]) {
         a = _mm256_add_epi32(T1, T2);
     }
 
-    H[0][0] = _mm256_extract_epi32(a, 0);
-    H[1][0] = _mm256_extract_epi32(a, 1);
-    H[2][0] = _mm256_extract_epi32(a, 2);
-    H[3][0] = _mm256_extract_epi32(a, 3);
-    H[4][0] = _mm256_extract_epi32(a, 4);
-    H[5][0] = _mm256_extract_epi32(a, 5);
-    H[6][0] = _mm256_extract_epi32(a, 6);
-    H[7][0] = _mm256_extract_epi32(a, 7);
+    H[0][0] += _mm256_extract_epi32(a, 0);
+    H[1][0] += _mm256_extract_epi32(a, 1);
+    H[2][0] += _mm256_extract_epi32(a, 2);
+    H[3][0] += _mm256_extract_epi32(a, 3);
+    H[4][0] += _mm256_extract_epi32(a, 4);
+    H[5][0] += _mm256_extract_epi32(a, 5);
+    H[6][0] += _mm256_extract_epi32(a, 6);
+    H[7][0] += _mm256_extract_epi32(a, 7);
 
-    H[0][1] = _mm256_extract_epi32(b, 0);
-    H[1][1] = _mm256_extract_epi32(b, 1);
-    H[2][1] = _mm256_extract_epi32(b, 2);
-    H[3][1] = _mm256_extract_epi32(b, 3);
-    H[4][1] = _mm256_extract_epi32(b, 4);
-    H[5][1] = _mm256_extract_epi32(b, 5);
-    H[6][1] = _mm256_extract_epi32(b, 6);
-    H[7][1] = _mm256_extract_epi32(b, 7);
+    H[0][1] += _mm256_extract_epi32(b, 0);
+    H[1][1] += _mm256_extract_epi32(b, 1);
+    H[2][1] += _mm256_extract_epi32(b, 2);
+    H[3][1] += _mm256_extract_epi32(b, 3);
+    H[4][1] += _mm256_extract_epi32(b, 4);
+    H[5][1] += _mm256_extract_epi32(b, 5);
+    H[6][1] += _mm256_extract_epi32(b, 6);
+    H[7][1] += _mm256_extract_epi32(b, 7);
 
-    H[0][2] = _mm256_extract_epi32(c, 0);
-    H[1][2] = _mm256_extract_epi32(c, 1);
-    H[2][2] = _mm256_extract_epi32(c, 2);
-    H[3][2] = _mm256_extract_epi32(c, 3);
-    H[4][2] = _mm256_extract_epi32(c, 4);
-    H[5][2] = _mm256_extract_epi32(c, 5);
-    H[6][2] = _mm256_extract_epi32(c, 6);
-    H[7][2] = _mm256_extract_epi32(c, 7);
+    H[0][2] += _mm256_extract_epi32(c, 0);
+    H[1][2] += _mm256_extract_epi32(c, 1);
+    H[2][2] += _mm256_extract_epi32(c, 2);
+    H[3][2] += _mm256_extract_epi32(c, 3);
+    H[4][2] += _mm256_extract_epi32(c, 4);
+    H[5][2] += _mm256_extract_epi32(c, 5);
+    H[6][2] += _mm256_extract_epi32(c, 6);
+    H[7][2] += _mm256_extract_epi32(c, 7);
 
-    H[0][3] = _mm256_extract_epi32(d, 0);
-    H[1][3] = _mm256_extract_epi32(d, 1);
-    H[2][3] = _mm256_extract_epi32(d, 2);
-    H[3][3] = _mm256_extract_epi32(d, 3);
-    H[4][3] = _mm256_extract_epi32(d, 4);
-    H[5][3] = _mm256_extract_epi32(d, 5);
-    H[6][3] = _mm256_extract_epi32(d, 6);
-    H[7][3] = _mm256_extract_epi32(d, 7);
+    H[0][3] += _mm256_extract_epi32(d, 0);
+    H[1][3] += _mm256_extract_epi32(d, 1);
+    H[2][3] += _mm256_extract_epi32(d, 2);
+    H[3][3] += _mm256_extract_epi32(d, 3);
+    H[4][3] += _mm256_extract_epi32(d, 4);
+    H[5][3] += _mm256_extract_epi32(d, 5);
+    H[6][3] += _mm256_extract_epi32(d, 6);
+    H[7][3] += _mm256_extract_epi32(d, 7);
 
-    H[0][4] = _mm256_extract_epi32(e, 0);
-    H[1][4] = _mm256_extract_epi32(e, 1);
-    H[2][4] = _mm256_extract_epi32(e, 2);
-    H[3][4] = _mm256_extract_epi32(e, 3);
-    H[4][4] = _mm256_extract_epi32(e, 4);
-    H[5][4] = _mm256_extract_epi32(e, 5);
-    H[6][4] = _mm256_extract_epi32(e, 6);
-    H[7][4] = _mm256_extract_epi32(e, 7);
+    H[0][4] += _mm256_extract_epi32(e, 0);
+    H[1][4] += _mm256_extract_epi32(e, 1);
+    H[2][4] += _mm256_extract_epi32(e, 2);
+    H[3][4] += _mm256_extract_epi32(e, 3);
+    H[4][4] += _mm256_extract_epi32(e, 4);
+    H[5][4] += _mm256_extract_epi32(e, 5);
+    H[6][4] += _mm256_extract_epi32(e, 6);
+    H[7][4] += _mm256_extract_epi32(e, 7);
 
-    H[0][5] = _mm256_extract_epi32(f, 0);
-    H[1][5] = _mm256_extract_epi32(f, 1);
-    H[2][5] = _mm256_extract_epi32(f, 2);
-    H[3][5] = _mm256_extract_epi32(f, 3);
-    H[4][5] = _mm256_extract_epi32(f, 4);
-    H[5][5] = _mm256_extract_epi32(f, 5);
-    H[6][5] = _mm256_extract_epi32(f, 6);
-    H[7][5] = _mm256_extract_epi32(f, 7);
+    H[0][5] += _mm256_extract_epi32(f, 0);
+    H[1][5] += _mm256_extract_epi32(f, 1);
+    H[2][5] += _mm256_extract_epi32(f, 2);
+    H[3][5] += _mm256_extract_epi32(f, 3);
+    H[4][5] += _mm256_extract_epi32(f, 4);
+    H[5][5] += _mm256_extract_epi32(f, 5);
+    H[6][5] += _mm256_extract_epi32(f, 6);
+    H[7][5] += _mm256_extract_epi32(f, 7);
 
-    H[0][6] = _mm256_extract_epi32(g, 0);
-    H[1][6] = _mm256_extract_epi32(g, 1);
-    H[2][6] = _mm256_extract_epi32(g, 2);
-    H[3][6] = _mm256_extract_epi32(g, 3);
-    H[4][6] = _mm256_extract_epi32(g, 4);
-    H[5][6] = _mm256_extract_epi32(g, 5);
-    H[6][6] = _mm256_extract_epi32(g, 6);
-    H[7][6] = _mm256_extract_epi32(g, 7);
+    H[0][6] += _mm256_extract_epi32(g, 0);
+    H[1][6] += _mm256_extract_epi32(g, 1);
+    H[2][6] += _mm256_extract_epi32(g, 2);
+    H[3][6] += _mm256_extract_epi32(g, 3);
+    H[4][6] += _mm256_extract_epi32(g, 4);
+    H[5][6] += _mm256_extract_epi32(g, 5);
+    H[6][6] += _mm256_extract_epi32(g, 6);
+    H[7][6] += _mm256_extract_epi32(g, 7);
 
-    H[0][7] = _mm256_extract_epi32(h, 0);
-    H[1][7] = _mm256_extract_epi32(h, 1);
-    H[2][7] = _mm256_extract_epi32(h, 2);
-    H[3][7] = _mm256_extract_epi32(h, 3);
-    H[4][7] = _mm256_extract_epi32(h, 4);
-    H[5][7] = _mm256_extract_epi32(h, 5);
-    H[6][7] = _mm256_extract_epi32(h, 6);
-    H[7][7] = _mm256_extract_epi32(h, 7);
+    H[0][7] += _mm256_extract_epi32(h, 0);
+    H[1][7] += _mm256_extract_epi32(h, 1);
+    H[2][7] += _mm256_extract_epi32(h, 2);
+    H[3][7] += _mm256_extract_epi32(h, 3);
+    H[4][7] += _mm256_extract_epi32(h, 4);
+    H[5][7] += _mm256_extract_epi32(h, 5);
+    H[6][7] += _mm256_extract_epi32(h, 6);
+    H[7][7] += _mm256_extract_epi32(h, 7);
 }
 #else
 void _sha256_hash_block_x8(const SHA256MessageBlock M[8], SHA256Digest H[8]) {
