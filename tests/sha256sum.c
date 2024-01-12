@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sha256.h>
-#include <streaming.h>
+#include <sha2/sha256.h>
+#include <sha2/streaming.h>
 
 int main(int argc, char **argv) {
     FILE *f;

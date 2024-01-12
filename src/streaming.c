@@ -1,4 +1,4 @@
-#include <streaming.h>
+#include <sha2/streaming.h>
 
 /* This file is special.
  * It is not compiled as a traditional translation unit. instead, it is #included inside of any of the

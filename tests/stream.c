@@ -1,5 +1,5 @@
-#include <sha256.h>
-#include <streaming.h>
+#include <sha2/sha256.h>
+#include <sha2/streaming.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

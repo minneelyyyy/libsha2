@@ -1,10 +1,11 @@
+PREFIX?=/usr/local
 
-OBJS=src/sha256.o
+OBJS=src/sha256/sha256.o src/sha256/generic.o
 TESTS=tests/basic tests/stream tests/sha256sum
 
 CFLAGS += -Iinclude
 
-.PHONY: all tests clean
+.PHONY: all install uninstall tests clean
 .SUFFIXES: .c .o
 
 all: libsha2.so libsha2.a
@@ -27,6 +28,11 @@ tests/stream: libsha2.a tests/stream.o
 
 tests/sha256sum: libsha2.a tests/sha256sum.o
 	$(CC) $(LDFLAGS) -o $@ tests/sha256sum.o libsha2.a
+
+install: libsha2.so libsha2.a
+	install -m 755 libsha2.so $(PREFIX)/lib
+	install -m 744 libsha2.a $(PREFIX)/lib
+	cp -r include/sha2/ $(PREFIX)/include/sha2
 
 clean:
 	rm -f $(OBJS) $(TESTS) tests/*.o libsha2.so libsha2.a
