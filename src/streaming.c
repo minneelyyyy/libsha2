@@ -145,7 +145,7 @@ void STREAM_INIT_NO_DEFAULTS_F(struct SHA2StreamState *st, DIGEST_T H) {
 void STREAM_FINISH_F(struct SHA2StreamState *st, DIGEST_T H) {
     size_t N;
 
-    MESSAGE_BLOCK_T* blocks = padded_message(st->_message_blocks,
+    MESSAGE_BLOCK_T* blocks = PADDED_F(st->_message_blocks,
         st->_data_size,
         (st->_bytes_written + st->_data_size) * 8,
         &N);
