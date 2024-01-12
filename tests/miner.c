@@ -47,7 +47,7 @@ int main(void) {
         init_digest(digests[7]);
 
         for (size_t i = 0; i < 8; i++) {
-            sz[i] = snprintf(blocks[i], sizeof(blocks[0]), CHALLENGE "%lu", u + i);
+            sz[i] = snprintf((char*)blocks[i], sizeof(blocks[0]), CHALLENGE "%lu", u + i);
             sha256_pad_message(&blocks[i], 1, sz[i] * 8, sz[0] * 8);
         }
 
@@ -63,7 +63,7 @@ int main(void) {
             if (check_difficulty(digests[i], DIFFICULTY)) {
                 char hashstr[64];
 
-                printf("string found: %*.*s\n", sz[i], sz[i], blocks[i]);
+                printf("string found: %*.*s\n", sz[i], sz[i], (char*)blocks[i]);
                 printf("hash: %64.64s\n", sha256tos(hashstr, digests[i]));
                 return 0;
             }
