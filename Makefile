@@ -1,7 +1,7 @@
 PREFIX?=/usr/local
 
 OBJS=src/sha256/sha256.o src/sha256/x86/avx2.o src/sha256/generic.o
-TESTS=tests/basic tests/stream tests/sha256sum tests/miner
+TESTS=tests/basic tests/stream tests/sha256sum tests/miner tests/miner-mt
 
 CFLAGS += -Iinclude -mavx -mavx2 -msse -msse2 -msse3 -msse4.1 -msse4.2
 
@@ -31,6 +31,9 @@ tests/sha256sum: libsha2.a tests/sha256sum.o
 
 tests/miner: libsha2.a tests/miner.o
 	$(CC) $(LDFLAGS) -o $@ tests/miner.o libsha2.a
+
+tests/miner-mt: libsha2.a tests/miner-mt.o
+	$(CC) $(LDFLAGS) -o $@ tests/miner-mt.o libsha2.a
 
 install: libsha2.so libsha2.a
 	install -m 755 libsha2.so $(PREFIX)/lib

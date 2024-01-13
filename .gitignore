@@ -5,4 +5,5 @@ tests/basic
 tests/stream
 tests/sha256sum
 tests/miner
+tests/miner-mt
 .vscode

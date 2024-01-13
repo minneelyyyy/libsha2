@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdbool.h>
 
-#define DIFFICULTY 4
+#define DIFFICULTY 3
 #define CHALLENGE "hello!"
 
 bool check_difficulty(SHA256Digest hash, size_t difficulty) {
