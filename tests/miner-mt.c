@@ -5,8 +5,8 @@
 #include <stdbool.h>
 #include <pthread.h>
 
-#define DIFFICULTY 3
-#define CHALLENGE "hello!"
+#define DIFFICULTY 4
+#define CHALLENGE "SIMD+MT=WIN$"
 
 /* should be tuned to roughly where the algorithm takes a second or so.
  * ideally also is a multiple of 8 to make maximum use of simd. */
